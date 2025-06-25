@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Download, Eye, FileText, Briefcase, Award, Palette, X } from 'lucide-react';
 import { PDFDownloadLink, PDFViewer, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 
@@ -51,15 +51,15 @@ const ProfessionalPDFTemplate = ({ cvData }) => {
     page: {
       flexDirection: 'column',
       backgroundColor: '#ffffff',
-      padding: 40,
+      padding: 30,
       fontFamily: 'Helvetica',
+      fontSize: 11,
     },
     header: {
       backgroundColor: '#2563eb',
       color: 'white',
       padding: 20,
       marginBottom: 20,
-      borderRadius: 8,
     },
     name: {
       fontSize: 24,
@@ -67,108 +67,111 @@ const ProfessionalPDFTemplate = ({ cvData }) => {
       marginBottom: 5,
     },
     jobTitle: {
-      fontSize: 16,
-      marginBottom: 10,
-      color: '#bfdbfe',
+      fontSize: 14,
+      marginBottom: 8,
+      opacity: 0.9,
     },
     contactInfo: {
       fontSize: 10,
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 15,
     },
     contactItem: {
       marginRight: 15,
-      marginBottom: 5,
+      marginBottom: 3,
     },
     sectionTitle: {
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: 'bold',
       color: '#1f2937',
-      marginTop: 20,
-      marginBottom: 10,
-      borderBottomWidth: 2,
+      marginTop: 15,
+      marginBottom: 8,
+      borderBottomWidth: 1,
       borderBottomColor: '#2563eb',
-      paddingBottom: 5,
+      paddingBottom: 3,
     },
     experienceItem: {
-      marginBottom: 15,
-      paddingLeft: 10,
-      borderLeftWidth: 3,
+      marginBottom: 12,
+      paddingLeft: 8,
+      borderLeftWidth: 2,
       borderLeftColor: '#2563eb',
     },
     experienceHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: 5,
+      marginBottom: 3,
     },
     experienceTitle: {
-      fontSize: 14,
+      fontSize: 12,
       fontWeight: 'bold',
       color: '#1f2937',
       flex: 1,
     },
     experienceDate: {
-      fontSize: 10,
+      fontSize: 9,
       color: '#6b7280',
-      textAlign: 'right',
     },
     experienceCompany: {
-      fontSize: 12,
+      fontSize: 11,
       color: '#2563eb',
       fontWeight: 'bold',
-      marginBottom: 5,
+      marginBottom: 3,
     },
     experienceDescription: {
-      fontSize: 11,
+      fontSize: 10,
       color: '#374151',
-      lineHeight: 1.4,
-      marginTop: 5,
+      lineHeight: 1.3,
+      marginTop: 3,
     },
     skillsContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 5,
-      marginTop: 10,
+      marginTop: 5,
     },
     skillTag: {
       backgroundColor: '#dbeafe',
       color: '#1e40af',
-      padding: '4 8',
-      borderRadius: 12,
-      fontSize: 10,
+      padding: 3,
+      paddingHorizontal: 6,
+      marginRight: 4,
+      marginBottom: 4,
+      fontSize: 9,
       fontWeight: 'bold',
-      marginRight: 5,
-      marginBottom: 5,
     },
     text: {
-      fontSize: 11,
+      fontSize: 10,
       color: '#374151',
-      lineHeight: 1.4,
+      lineHeight: 1.3,
     },
     additionalSection: {
-      marginTop: 15,
-    },
-    additionalTitle: {
-      fontSize: 12,
-      fontWeight: 'bold',
-      color: '#1f2937',
-      marginBottom: 5,
-    },
-    linksSection: {
       marginTop: 10,
     },
+    additionalTitle: {
+      fontSize: 11,
+      fontWeight: 'bold',
+      color: '#1f2937',
+      marginBottom: 3,
+    },
+    linksSection: {
+      marginTop: 5,
+    },
     link: {
-      fontSize: 10,
+      fontSize: 9,
       color: '#2563eb',
       marginBottom: 2,
     },
   });
 
-  // Ensure cvData exists
+  // Ensure cvData exists and has required fields
   if (!cvData) {
-    return null;
+    return (
+      <Document>
+        <Page size="A4" style={styles.page}>
+          <Text style={styles.text}>No CV data provided</Text>
+        </Page>
+      </Document>
+    );
   }
 
   const allSkills = getAllSkills();
@@ -179,15 +182,15 @@ const ProfessionalPDFTemplate = ({ cvData }) => {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.name}>
-            {(cvData.firstName || '') + ' ' + (cvData.lastName || '')}
+            {`${cvData.firstName || 'First Name'} ${cvData.lastName || 'Last Name'}`}
           </Text>
           {cvData.jobTitle && <Text style={styles.jobTitle}>{cvData.jobTitle}</Text>}
           <View style={styles.contactInfo}>
-            {cvData.email && <Text style={styles.contactItem}>{cvData.email}</Text>}
-            {cvData.phone && <Text style={styles.contactItem}>{cvData.phone}</Text>}
+            {cvData.email && <Text style={styles.contactItem}>📧 {cvData.email}</Text>}
+            {cvData.phone && <Text style={styles.contactItem}>📞 {cvData.phone}</Text>}
             {(cvData.city || cvData.country) && (
               <Text style={styles.contactItem}>
-                {[cvData.city, cvData.country].filter(Boolean).join(', ')}
+                📍 {[cvData.city, cvData.country].filter(Boolean).join(', ')}
               </Text>
             )}
           </View>
@@ -196,7 +199,7 @@ const ProfessionalPDFTemplate = ({ cvData }) => {
         {/* Professional Summary */}
         {cvData.professionalSummary && (
           <View>
-            <Text style={styles.sectionTitle}>Professional Summary</Text>
+            <Text style={styles.sectionTitle}>PROFESSIONAL SUMMARY</Text>
             <Text style={styles.text}>{cvData.professionalSummary}</Text>
           </View>
         )}
@@ -204,13 +207,15 @@ const ProfessionalPDFTemplate = ({ cvData }) => {
         {/* Work Experience */}
         {cvData.experiences && cvData.experiences.length > 0 && (
           <View>
-            <Text style={styles.sectionTitle}>Work Experience</Text>
+            <Text style={styles.sectionTitle}>WORK EXPERIENCE</Text>
             {cvData.experiences
-              .filter(exp => exp && exp.jobTitle && exp.jobTitle.trim() !== '')
+              .filter(exp => exp && (exp.jobTitle || exp.company))
               .map((exp, index) => (
-                <View key={index} style={styles.experienceItem}>
+                <View key={`exp-${index}`} style={styles.experienceItem}>
                   <View style={styles.experienceHeader}>
-                    <Text style={styles.experienceTitle}>{exp.jobTitle}</Text>
+                    <Text style={styles.experienceTitle}>
+                      {exp.jobTitle || 'Position Title'}
+                    </Text>
                     <Text style={styles.experienceDate}>
                       {formatDate(exp.startDate)} - {exp.current ? 'Present' : formatDate(exp.endDate)}
                     </Text>
@@ -231,17 +236,17 @@ const ProfessionalPDFTemplate = ({ cvData }) => {
         {/* Education */}
         {cvData.educations && cvData.educations.length > 0 && (
           <View>
-            <Text style={styles.sectionTitle}>Education</Text>
+            <Text style={styles.sectionTitle}>EDUCATION</Text>
             {cvData.educations
-              .filter(edu => edu && edu.degree && edu.degree.trim() !== '')
+              .filter(edu => edu && (edu.degree || edu.institution))
               .map((edu, index) => (
-                <View key={index} style={styles.experienceItem}>
+                <View key={`edu-${index}`} style={styles.experienceItem}>
                   <View style={styles.experienceHeader}>
                     <Text style={styles.experienceTitle}>
-                      {edu.degree}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ''}
+                      {edu.degree || 'Degree'}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ''}
                     </Text>
                     <Text style={styles.experienceDate}>
-                      {edu.startYear} - {edu.endYear}
+                      {edu.startYear || 'Start'} - {edu.endYear || 'End'}
                     </Text>
                   </View>
                   {edu.institution && (
@@ -258,10 +263,10 @@ const ProfessionalPDFTemplate = ({ cvData }) => {
         {/* Skills */}
         {allSkills.length > 0 && (
           <View>
-            <Text style={styles.sectionTitle}>Skills</Text>
+            <Text style={styles.sectionTitle}>SKILLS</Text>
             <View style={styles.skillsContainer}>
               {allSkills.map((skill, index) => (
-                <Text key={index} style={styles.skillTag}>
+                <Text key={`skill-${index}`} style={styles.skillTag}>
                   {skill}
                 </Text>
               ))}
@@ -272,21 +277,21 @@ const ProfessionalPDFTemplate = ({ cvData }) => {
         {/* Additional Sections */}
         {cvData.languages && cvData.languages.trim() !== '' && (
           <View style={styles.additionalSection}>
-            <Text style={styles.additionalTitle}>Languages</Text>
+            <Text style={styles.additionalTitle}>LANGUAGES</Text>
             <Text style={styles.text}>{cvData.languages}</Text>
           </View>
         )}
 
         {cvData.certifications && cvData.certifications.trim() !== '' && (
           <View style={styles.additionalSection}>
-            <Text style={styles.additionalTitle}>Certifications</Text>
+            <Text style={styles.additionalTitle}>CERTIFICATIONS</Text>
             <Text style={styles.text}>{cvData.certifications}</Text>
           </View>
         )}
 
         {cvData.interests && cvData.interests.trim() !== '' && (
           <View style={styles.additionalSection}>
-            <Text style={styles.additionalTitle}>Interests</Text>
+            <Text style={styles.additionalTitle}>INTERESTS</Text>
             <Text style={styles.text}>{cvData.interests}</Text>
           </View>
         )}
@@ -294,7 +299,7 @@ const ProfessionalPDFTemplate = ({ cvData }) => {
         {/* Links */}
         {(cvData.portfolioUrl || cvData.githubUrl || cvData.linkedinUrl) && (
           <View style={styles.additionalSection}>
-            <Text style={styles.additionalTitle}>Links</Text>
+            <Text style={styles.additionalTitle}>LINKS</Text>
             <View style={styles.linksSection}>
               {cvData.portfolioUrl && (
                 <Text style={styles.link}>Portfolio: {cvData.portfolioUrl}</Text>
@@ -317,22 +322,86 @@ const ProfessionalPDFTemplate = ({ cvData }) => {
 const CVTemplateSelector = ({ cvData, onClose }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [pdfError, setPdfError] = useState(null);
+  const [previewKey, setPreviewKey] = useState(0);
 
   // Memoize the safe data to prevent unnecessary re-renders
   const safeData = useMemo(() => {
-    return {
-      firstName: cvData?.firstName || 'John',
-      lastName: cvData?.lastName || 'Doe',
-      email: cvData?.email || 'john.doe@example.com',
-      phone: cvData?.phone || '+1 (555) 123-4567',
-      city: cvData?.city || 'New York',
-      country: cvData?.country || 'USA',
-      jobTitle: cvData?.jobTitle || 'Software Developer',
-      professionalSummary: cvData?.professionalSummary || 'Experienced professional with a passion for creating innovative solutions.',
-      portfolioUrl: cvData?.portfolioUrl || '',
-      githubUrl: cvData?.githubUrl || '',
-      linkedinUrl: cvData?.linkedinUrl || '',
-      experiences: Array.isArray(cvData?.experiences) ? cvData.experiences : [
+    console.log('Original cvData:', cvData); // Debug log
+    
+    if (!cvData || Object.keys(cvData).length === 0) {
+      const defaultData = {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        phone: '+1 (555) 123-4567',
+        city: 'New York',
+        country: 'USA',
+        jobTitle: 'Software Developer',
+        professionalSummary: 'Experienced professional with a passion for creating innovative solutions and delivering high-quality results.',
+        portfolioUrl: 'https://johndoe.portfolio.com',
+        githubUrl: 'https://github.com/johndoe',
+        linkedinUrl: 'https://linkedin.com/in/johndoe',
+        experiences: [
+          {
+            jobTitle: 'Senior Software Developer',
+            company: 'Tech Innovations Inc.',
+            location: 'New York, NY',
+            startDate: '2022-01',
+            endDate: '',
+            current: true,
+            description: 'Led development of web applications using React and Node.js. Collaborated with cross-functional teams to deliver scalable solutions.'
+          },
+          {
+            jobTitle: 'Software Developer',
+            company: 'StartUp Solutions',
+            location: 'San Francisco, CA',
+            startDate: '2020-06',
+            endDate: '2021-12',
+            current: false,
+            description: 'Developed and maintained multiple client projects using modern JavaScript frameworks.'
+          }
+        ],
+        educations: [
+          {
+            degree: 'Bachelor of Science',
+            institution: 'University of Technology',
+            fieldOfStudy: 'Computer Science',
+            startYear: '2016',
+            endYear: '2020',
+            description: 'Graduated with honors, specializing in software engineering and data structures.'
+          }
+        ],
+        skills: {
+          technical: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Git'],
+          soft: ['Communication', 'Team Leadership', 'Problem Solving', 'Project Management'],
+          creative: ['UI/UX Design', 'Creative Writing'],
+          analytical: ['Data Analysis', 'Strategic Planning']
+        },
+        languages: 'English (Native), Spanish (Intermediate), French (Basic)',
+        certifications: 'AWS Certified Developer, Google Cloud Platform Professional',
+        interests: 'Photography, Hiking, Open Source Contributing, Chess'
+      };
+      console.log('Using default data:', defaultData);
+      return defaultData;
+    }
+
+    // Deep clone the data to prevent reference issues
+    const clonedData = JSON.parse(JSON.stringify(cvData));
+    
+    // Process the actual CV data with proper defaults
+    const processedData = {
+      firstName: clonedData.firstName || 'John',
+      lastName: clonedData.lastName || 'Doe',
+      email: clonedData.email || 'john.doe@example.com',
+      phone: clonedData.phone || '+1 (555) 123-4567',
+      city: clonedData.city || 'New York',
+      country: clonedData.country || 'USA',
+      jobTitle: clonedData.jobTitle || 'Software Developer',
+      professionalSummary: clonedData.professionalSummary || 'Experienced professional with a passion for creating innovative solutions.',
+      portfolioUrl: clonedData.portfolioUrl || '',
+      githubUrl: clonedData.githubUrl || '',
+      linkedinUrl: clonedData.linkedinUrl || '',
+      experiences: Array.isArray(clonedData.experiences) && clonedData.experiences.length > 0 ? clonedData.experiences : [
         {
           jobTitle: 'Software Developer',
           company: 'Tech Company',
@@ -343,7 +412,7 @@ const CVTemplateSelector = ({ cvData, onClose }) => {
           description: 'Developed and maintained web applications using modern technologies.'
         }
       ],
-      educations: Array.isArray(cvData?.educations) ? cvData.educations : [
+      educations: Array.isArray(clonedData.educations) && clonedData.educations.length > 0 ? clonedData.educations : [
         {
           degree: 'Bachelor of Science',
           institution: 'University Name',
@@ -354,26 +423,36 @@ const CVTemplateSelector = ({ cvData, onClose }) => {
         }
       ],
       skills: {
-        technical: Array.isArray(cvData?.skills?.technical) ? cvData.skills.technical : ['JavaScript', 'React', 'Node.js'],
-        soft: Array.isArray(cvData?.skills?.soft) ? cvData.skills.soft : ['Communication', 'Team Work'],
-        creative: Array.isArray(cvData?.skills?.creative) ? cvData.skills.creative : [],
-        analytical: Array.isArray(cvData?.skills?.analytical) ? cvData.skills.analytical : []
+        technical: Array.isArray(clonedData?.skills?.technical) && clonedData.skills.technical.length > 0 ? clonedData.skills.technical : ['JavaScript', 'React', 'Node.js'],
+        soft: Array.isArray(clonedData?.skills?.soft) && clonedData.skills.soft.length > 0 ? clonedData.skills.soft : ['Communication', 'Team Work'],
+        creative: Array.isArray(clonedData?.skills?.creative) ? clonedData.skills.creative : [],
+        analytical: Array.isArray(clonedData?.skills?.analytical) ? clonedData.skills.analytical : []
       },
-      languages: cvData?.languages || '',
-      certifications: cvData?.certifications || '',
-      interests: cvData?.interests || ''
+      languages: clonedData.languages || '',
+      certifications: clonedData.certifications || '',
+      interests: clonedData.interests || ''
     };
+    
+    console.log('Processed data:', processedData);
+    return processedData;
   }, [cvData]);
 
-  const handlePreview = () => {
-    setPdfError(null);
-    setShowPreview(true);
-  };
+  // Memoize the PDF document to prevent unnecessary re-renders
+  const pdfDocument = useMemo(() => {
+    return <ProfessionalPDFTemplate cvData={safeData} />;
+  }, [safeData]);
 
-  const handleClosePreview = () => {
+  const handlePreview = useCallback(() => {
+    console.log('Opening preview with data:', safeData);
+    setPdfError(null);
+    setPreviewKey(prev => prev + 1); // Force re-render of PDFViewer
+    setShowPreview(true);
+  }, [safeData]);
+
+  const handleClosePreview = useCallback(() => {
     setShowPreview(false);
     setPdfError(null);
-  };
+  }, []);
 
   // Generate filename
   const fileName = `${safeData.firstName}_${safeData.lastName}_CV.pdf`.replace(/\s+/g, '_');
@@ -428,7 +507,7 @@ const CVTemplateSelector = ({ cvData, onClose }) => {
                 </button>
                 
                 <PDFDownloadLink
-                  document={<ProfessionalPDFTemplate cvData={safeData} />}
+                  document={pdfDocument}
                   fileName={fileName}
                   className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center justify-center space-x-2 no-underline"
                 >
@@ -443,12 +522,18 @@ const CVTemplateSelector = ({ cvData, onClose }) => {
                 </PDFDownloadLink>
               </div>
 
-              {/* Debug Info - Remove in production */}
-              <div className="mt-4 p-2 bg-gray-100 rounded text-xs text-gray-600">
-                <p>Data loaded: {cvData ? 'Yes' : 'No'}</p>
-                <p>Name: {safeData.firstName} {safeData.lastName}</p>
-                <p>Experiences: {safeData.experiences?.length || 0}</p>
-                <p>Skills: {Object.values(safeData.skills).flat().length}</p>
+              {/* Debug Info */}
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
+                <h4 className="font-semibold text-sm text-gray-700 mb-2">CV Data Status:</h4>
+                <div className="space-y-1 text-xs text-gray-600">
+                  <p><span className="font-medium">Data Source:</span> {cvData && Object.keys(cvData).length > 0 ? 'External Data' : 'Sample Data'}</p>
+                  <p><span className="font-medium">Name:</span> {safeData.firstName} {safeData.lastName}</p>
+                  <p><span className="font-medium">Job Title:</span> {safeData.jobTitle}</p>
+                  <p><span className="font-medium">Experience Entries:</span> {safeData.experiences?.length || 0}</p>
+                  <p><span className="font-medium">Education Entries:</span> {safeData.educations?.length || 0}</p>
+                  <p><span className="font-medium">Total Skills:</span> {Object.values(safeData.skills).flat().length}</p>
+                  <p><span className="font-medium">Summary Length:</span> {safeData.professionalSummary?.length || 0} chars</p>
+                </div>
               </div>
             </div>
           </div>
@@ -475,58 +560,76 @@ const CVTemplateSelector = ({ cvData, onClose }) => {
 
       {/* Preview Modal */}
       {showPreview && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-5xl w-full max-h-[90vh] overflow-hidden">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="relative w-full max-w-5xl h-full max-h-[90vh] bg-white rounded-xl shadow-2xl overflow-hidden">
+            
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b">
-              <div className="flex items-center space-x-3">
-                <h3 className="text-xl font-bold">CV Preview</h3>
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">Professional Template</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <PDFDownloadLink
-                  document={<ProfessionalPDFTemplate cvData={safeData} />}
-                  fileName={fileName}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center space-x-2 no-underline"
-                >
-                  {({ loading, error }) => (
-                    <>
-                      <Download className="h-4 w-4" />
-                      <span>
-                        {error ? 'Error' : loading ? 'Generating...' : 'Download PDF'}
-                      </span>
-                    </>
-                  )}
-                </PDFDownloadLink>
-                <button
-                  onClick={handleClosePreview}
-                  className="text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  <X className="h-6 w-6" />
-                </button>
+            <div className="bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-4 border-b">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <FileText className="h-5 w-5 text-white" />
+                    <div>
+                      <h3 className="text-white font-semibold">CV Preview</h3>
+                      <p className="text-slate-300 text-sm">{fileName}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <PDFDownloadLink
+                    document={pdfDocument}
+                    fileName={fileName}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 no-underline font-medium"
+                  >
+                    {({ loading, error }) => (
+                      <>
+                        {loading ? (
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        ) : (
+                          <Download className="h-4 w-4" />
+                        )}
+                        <span>
+                          {error ? 'Error' : loading ? 'Generating...' : 'Download'}
+                        </span>
+                      </>
+                    )}
+                  </PDFDownloadLink>
+                  <button
+                    onClick={handleClosePreview}
+                    className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                  >
+                    <X className="h-5 w-5 text-white" />
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Modal Content */}
-            <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
+            {/* PDF Viewer */}
+            <div className="flex-1 bg-gray-100 h-full">
               {pdfError ? (
-                <div className="p-8 text-center">
-                  <div className="text-red-600 mb-4">
-                    <FileText className="h-16 w-16 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold">PDF Generation Error</h3>
-                    <p className="text-sm text-gray-600 mt-2">{pdfError}</p>
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <FileText className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Preview Error</h3>
+                    <p className="text-gray-600 mb-4">{pdfError}</p>
+                    <button
+                      onClick={handlePreview}
+                      className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                    >
+                      Retry
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setPdfError(null)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                  >
-                    Try Again
-                  </button>
                 </div>
               ) : (
-                <div className="relative">
-                  <PDFViewer width="100%" height="600px" showToolbar={true}>
-                    <ProfessionalPDFTemplate cvData={safeData} />
+                <div className="h-full">
+                  <PDFViewer 
+                    key={previewKey}
+                    width="100%"
+                    height="100%" 
+                    showToolbar={false}
+                  >
+                    {pdfDocument}
                   </PDFViewer>
                 </div>
               )}

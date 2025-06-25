@@ -8,6 +8,7 @@ import ProfessionalInfoPage from './components/Form-components/ProfessionalInfoP
 import ExperiencePage from './components/Form-components/ExperiencePage';
 import EducationPage from './components/Form-components/EducationPage';
 import SkillsPage from './components/Form-components/SkillsPage';
+import AdditionalInfoPage from './components/Form-components/AdditionalInfoPage';
 
 function App() {
   const [cvData, setCvData] = useState({
@@ -46,12 +47,32 @@ function App() {
       endYear: '',
       description: ''
     }],
+    
+    // Skills
     skills: {
       technical: [],
       soft: [],
       creative: [],
       analytical: []
     },
+    
+    // Additional Information (new structure)
+    additionalInfo: {
+      languages: [
+        // Structure: { name: '', proficiency: 'intermediate' }
+      ],
+      certifications: [
+        // Structure: { name: '', issuer: '', date: '' }
+      ],
+      interests: [
+        // Structure: string values
+      ],
+      references: [
+        // Structure: { name: '', title: '', company: '', email: '', phone: '' }
+      ]
+    },
+    
+    // Legacy fields (keeping for backward compatibility if needed)
     languages: '',
     certifications: '',
     interests: ''
@@ -66,6 +87,7 @@ function App() {
         <Route path="/experience" element={<ExperiencePage cvData={cvData} setCvData={setCvData}/>} />
         <Route path="/education" element={<EducationPage cvData={cvData} setCvData={setCvData}/>} />
         <Route path="/skills" element={<SkillsPage cvData={cvData} setCvData={setCvData}/>} />
+        <Route path="/additional-info" element={<AdditionalInfoPage cvData={cvData} setCvData={setCvData}/>} />
       </Routes>
     </>
   )

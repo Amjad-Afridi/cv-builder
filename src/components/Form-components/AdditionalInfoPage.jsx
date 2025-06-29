@@ -190,21 +190,20 @@ const AdditionalInfoPage = ({ cvData, setCvData }) => {
   };
 
   const getCompletedItems = () => {
-  let completed = 0;
-  Object.keys(additionalSections).forEach(section => {
-    const sectionItems = cvData.additionalInfo?.[section] || [];
-    if (section === 'interests') {
-      completed += sectionItems.filter(item => 
-        typeof item === 'string' ? item.trim() : false
-      ).length;
-    } else {
-      completed += sectionItems.filter(item => 
-        typeof item === 'object' ? Object.values(item).some(val => val && val.toString().trim()) : false
-      ).length;
-    }
-  });
-  return completed;
-};
+    let completed = 0;
+    Object.keys(additionalSections).forEach(section => {
+      const sectionItems = cvData.additionalInfo?.[section] || [];
+      if (section === 'interests') {
+console.log('section items , ',sectionItems)
+        completed += sectionItems.filter(item => item).length;
+      } else {
+        completed += sectionItems.filter(item => 
+          typeof item === 'object' ? Object.values(item).some(val => val && val.toString().trim()) : item.trim()
+        ).length;
+      }
+    });
+    return completed;
+  };
 
   const getTotalItems = () => {
     let total = 0;

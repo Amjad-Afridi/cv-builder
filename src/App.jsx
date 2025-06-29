@@ -19,6 +19,7 @@ function App() {
     phone: '',
     city: '',
     country: '',
+    profilePictureUrl: '',
     
     // Professional Information
     jobTitle: '',
@@ -48,35 +49,44 @@ function App() {
       description: ''
     }],
     
-    // Skills
+    // Skills - Organized by categories with expertise levels
     skills: {
-      technical: [],
-      soft: [],
-      creative: [],
-      analytical: []
-    },
-    
-    // Additional Information (new structure)
-    additionalInfo: {
-      languages: [
-        // Structure: { name: '', proficiency: 'intermediate' }
+      technical: [
+        // Structure: { name: 'JavaScript', level: 4 }
+        // level: 1-5 (1=Beginner, 2=Novice, 3=Intermediate, 4=Advanced, 5=Expert)
       ],
-      certifications: [
-        // Structure: { name: '', issuer: '', date: '' }
+      soft: [
+        // Structure: { name: 'Leadership', level: 3 }
+        // Examples: Communication, Teamwork, Problem Solving, Time Management
       ],
-      interests: [
-        // Structure: string values
+      creative: [
+        // Structure: { name: 'UI/UX Design', level: 4 }
+        // Examples: Graphic Design, Photography, Video Editing, Creative Writing
       ],
-      references: [
-        // Structure: { name: '', title: '', company: '', email: '', phone: '' }
+      analytical: [
+        // Structure: { name: 'Data Analysis', level: 3 }
+        // Examples: Research, Statistics, Critical Thinking, Data Visualization
       ]
     },
     
-    // Legacy fields (keeping for backward compatibility if needed)
-    languages: '',
-    certifications: '',
-    interests: ''
-  });
+    // Additional Information
+    additionalInfo: {
+      languages: [
+        // Structure: { name: 'English', proficiency: 'native' }
+        // proficiency options: 'beginner', 'intermediate', 'advanced', 'fluent', 'native'
+      ],
+      certifications: [
+        // Structure: { name: 'AWS Certified Developer', issuer: 'Amazon Web Services', date: '2023' }
+      ],
+      interests: [
+        // Structure: string values
+        // Examples: 'Photography', 'Hiking', 'Chess', 'Cooking'
+      ],
+      references: [
+        // Structure: { name: 'John Smith', title: 'Senior Developer', company: 'Tech Corp', email: 'john@techcorp.com', phone: '+1234567890' }
+      ]
+    },
+});
 
   return (
     <>
